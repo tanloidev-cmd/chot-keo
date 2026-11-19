@@ -208,9 +208,15 @@ Thêm các biến giống `.env.local`, nhưng dùng giá trị production:
 | `SUPABASE_SECRET_KEY` | Secret key |
 | `AUTH_IDENTIFIER_MODE` | `email` |
 | `AUTH_PHONE_EMAIL_DOMAIN` | `phone.chotkeo.invalid` |
-| `TZ` | `Asia/Ho_Chi_Minh` |
+| `APP_TZ` | `Asia/Ho_Chi_Minh` (tùy chọn — xem ghi chú dưới) |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | nếu bật Turnstile |
 | `TURNSTILE_SECRET_KEY` | nếu bật Turnstile |
+
+> **Không thêm `TZ` trên Vercel.** Vercel giữ tên `TZ` làm biến hệ thống (function
+> luôn chạy UTC) nên giao diện báo *"The name of your Environment Variable is
+> reserved"*. App tự đặt `process.env.TZ` lúc khởi động từ `APP_TZ`
+> (`src/instrumentation.ts` → `src/lib/timezone.ts`), mặc định
+> `Asia/Ho_Chi_Minh`. Chỉ cần thêm `APP_TZ` khi muốn múi giờ khác.
 
 Deploy.
 
@@ -343,6 +349,8 @@ Migration được version hóa trong `supabase/migrations/`. Nếu một migrat
 | App báo lỗi kết nối Supabase | Project Free bị pause, hoặc sai URL/key. |
 | Turnstile luôn fail | Site key và secret key không cùng một widget/domain. |
 | Không đăng nhập được trên preview Vercel | Thêm domain preview vào Supabase Redirect URLs hoặc dùng production domain. |
+| Vercel báo `Environment variable "TZ" is invalid` / *name is reserved* | Vercel giữ tên `TZ` và chạy UTC. Bỏ biến đó đi; app đã tự áp `APP_TZ` (mặc định `Asia/Ho_Chi_Minh`) qua `src/instrumentation.ts`. |
+| Ngày/giờ trên lịch lệch 7 tiếng khi deploy | Runtime thiếu timezone: kiểm tra `APP_TZ` và `src/instrumentation.ts`; xem log khởi động. |
 
 ---
 
