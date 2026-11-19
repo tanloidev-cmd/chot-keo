@@ -1,12 +1,17 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { AlertCircle, Save } from "lucide-react";
 
 import { SubmitButton } from "@/components/forms/submit-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -16,9 +21,11 @@ import {
 } from "@/components/ui/select";
 import { updateProfileAction, type AuthState } from "@/lib/auth/actions";
 import { formatPhone } from "@/lib/auth/phone";
+import { useFieldForm } from "@/lib/forms/use-field-form";
 import type { Profile } from "@/lib/types";
 
 const initialState: AuthState = {};
+const FIELDS = ["displayName", "timezone"] as const;
 
 const timezones = [
   ["Asia/Ho_Chi_Minh", "Việt Nam (GMT+7)"],
@@ -36,11 +43,24 @@ export function ProfileForm({
   profile: Profile;
   phone: string | null;
 }) {
-  const [state, formAction] = useActionState(updateProfileAction, initialState);
   const [timezone, setTimezone] = useState(profile.timezone);
+  const {
+    state,
+    fieldErrors,
+    onSubmit,
+    markEdited,
+    formRef,
+    errorId,
+    pending,
+  } = useFieldForm({
+    action: updateProfileAction,
+    initialState,
+    id: "profile",
+    fieldOrder: FIELDS,
+  });
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} onSubmit={onSubmit} noValidate className="space-y-4">
       {state.error ? (
         <Alert variant="destructive">
           <AlertCircle />
@@ -55,8 +75,8 @@ export function ProfileForm({
         </Alert>
       ) : null}
 
-      <div className="space-y-2">
-        <Label htmlFor="displayName">Tên hiển thị</Label>
+      <Field data-invalid={fieldErrors.displayName ? true : undefined}>
+        <FieldLabel htmlFor="displayName">Tên hiển thị</FieldLabel>
         <Input
           id="displayName"
           name="displayName"
@@ -64,22 +84,30 @@ export function ProfileForm({
           maxLength={60}
           className="h-11"
           required
+          aria-invalid={fieldErrors.displayName ? true : undefined}
+          aria-describedby={
+            fieldErrors.displayName ? errorId("displayName") : undefined
+          }
+          onChange={() => markEdited("displayName")}
         />
-      </div>
+        <FieldError id={errorId("displayName")}>
+          {fieldErrors.displayName}
+        </FieldError>
+      </Field>
 
-      <div className="space-y-2">
-        <Label>Số điện thoại đăng nhập</Label>
-        <Input value={formatPhone(phone)} disabled className="h-11" />
-        <p className="text-xs text-muted-foreground">
+      <Field>
+        <FieldLabel>Số điện thoại đăng nhập</FieldLabel>
+        <Input value={formatPhone(phone)} disabled className="h-11" readOnly />
+        <FieldDescription className="text-xs">
           Số điện thoại là tên đăng nhập, không hiển thị cho thành viên khác.
-        </p>
-      </div>
+        </FieldDescription>
+      </Field>
 
-      <div className="space-y-2">
-        <Label>Múi giờ</Label>
+      <Field data-invalid={fieldErrors.timezone ? true : undefined}>
+        <FieldLabel>Múi giờ</FieldLabel>
         <input type="hidden" name="timezone" value={timezone} />
         <Select value={timezone} onValueChange={setTimezone}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full" aria-label="Múi giờ">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -90,9 +118,10 @@ export function ProfileForm({
             ))}
           </SelectContent>
         </Select>
-      </div>
+        <FieldError id={errorId("timezone")}>{fieldErrors.timezone}</FieldError>
+      </Field>
 
-      <SubmitButton>
+      <SubmitButton pending={pending}>
         <Save />
         Lưu hồ sơ
       </SubmitButton>

@@ -1,22 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { AlertCircle, ArrowRight, LockKeyhole, Phone } from "lucide-react";
 
 import { SubmitButton } from "@/components/forms/submit-button";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { loginAction, type AuthState } from "@/lib/auth/actions";
+import { validateLoginInput } from "@/lib/auth/validation";
+import { useFieldForm } from "@/lib/forms/use-field-form";
 
 const initialState: AuthState = {};
+const FIELDS = ["phone", "password"] as const;
 
 export function LoginForm({ next }: { next?: string }) {
-  const [state, formAction] = useActionState(loginAction, initialState);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const {
+    state,
+    fieldErrors,
+    onSubmit,
+    markEdited,
+    formRef,
+    errorId,
+    pending,
+  } = useFieldForm({
+    action: loginAction,
+    initialState,
+    id: "login",
+    fieldOrder: FIELDS,
+    validate: (formData) =>
+      validateLoginInput({
+        phone: String(formData.get("phone") ?? ""),
+        password: String(formData.get("password") ?? ""),
+      }),
+  });
 
   return (
     <Card>
@@ -27,7 +48,12 @@ export function LoginForm({ next }: { next?: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4">
+        <form
+          ref={formRef}
+          onSubmit={onSubmit}
+          noValidate
+          className="space-y-4"
+        >
           <input type="hidden" name="next" value={next ?? "/home"} />
           <input type="hidden" name="turnstileToken" value={turnstileToken} />
 
@@ -38,8 +64,8 @@ export function LoginForm({ next }: { next?: string }) {
             </Alert>
           ) : null}
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Số điện thoại</Label>
+          <Field data-invalid={fieldErrors.phone ? true : undefined}>
+            <FieldLabel htmlFor="phone">Số điện thoại</FieldLabel>
             <div className="relative">
               <Phone className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -51,12 +77,18 @@ export function LoginForm({ next }: { next?: string }) {
                 placeholder="0912 345 678"
                 className="h-11 pl-9"
                 required
+                aria-invalid={fieldErrors.phone ? true : undefined}
+                aria-describedby={
+                  fieldErrors.phone ? errorId("phone") : undefined
+                }
+                onChange={() => markEdited("phone")}
               />
             </div>
-          </div>
+            <FieldError id={errorId("phone")}>{fieldErrors.phone}</FieldError>
+          </Field>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Mật khẩu</Label>
+          <Field data-invalid={fieldErrors.password ? true : undefined}>
+            <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
             <div className="relative">
               <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -67,9 +99,17 @@ export function LoginForm({ next }: { next?: string }) {
                 placeholder="Tối thiểu 8 ký tự"
                 className="h-11 pl-9"
                 required
+                aria-invalid={fieldErrors.password ? true : undefined}
+                aria-describedby={
+                  fieldErrors.password ? errorId("password") : undefined
+                }
+                onChange={() => markEdited("password")}
               />
             </div>
-          </div>
+            <FieldError id={errorId("password")}>
+              {fieldErrors.password}
+            </FieldError>
+          </Field>
 
           <TurnstileWidget onToken={setTurnstileToken} />
 
@@ -82,7 +122,7 @@ export function LoginForm({ next }: { next?: string }) {
             </Link>
           </div>
 
-          <SubmitButton className="h-11 w-full">
+          <SubmitButton className="h-11 w-full" pending={pending}>
             Đăng nhập
             <ArrowRight />
           </SubmitButton>

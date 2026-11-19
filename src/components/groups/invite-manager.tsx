@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertCircle,
@@ -26,16 +26,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 import {
   createInviteAction,
   revokeInviteAction,
   type InviteState,
 } from "@/lib/actions/groups";
+import { useFieldForm } from "@/lib/forms/use-field-form";
 import { format } from "date-fns";
 import type { GroupInvite } from "@/lib/types";
 
 const initialState: InviteState = {};
+const FIELDS = ["label", "maxUses", "expiresDays"] as const;
 
 export function InviteManager({
   groupId,
@@ -47,7 +53,20 @@ export function InviteManager({
   canManage: boolean;
 }) {
   const router = useRouter();
-  const [state, formAction] = useActionState(createInviteAction, initialState);
+  const {
+    state,
+    fieldErrors,
+    onSubmit,
+    markEdited,
+    formRef,
+    errorId,
+    pending: creating,
+  } = useFieldForm({
+    action: createInviteAction,
+    initialState,
+    id: "invite",
+    fieldOrder: FIELDS,
+  });
   const [revoking, setRevoking] = useState<string | null>(null);
 
   useEffect(() => {
@@ -89,7 +108,7 @@ export function InviteManager({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={formAction} className="space-y-3">
+          <form ref={formRef} onSubmit={onSubmit} noValidate className="space-y-3">
             <input type="hidden" name="groupId" value={groupId} />
 
             {state.error ? (
@@ -129,40 +148,64 @@ export function InviteManager({
               </Alert>
             ) : null}
 
-            <div className="space-y-2">
-              <Label htmlFor="invite-label">Nhãn (tùy chọn)</Label>
+            <Field data-invalid={fieldErrors.label ? true : undefined}>
+              <FieldLabel htmlFor="invite-label">Nhãn (tùy chọn)</FieldLabel>
               <Input
                 id="invite-label"
                 name="label"
                 placeholder="Ví dụ: Mời nhóm cấp 3"
                 maxLength={80}
+                aria-invalid={fieldErrors.label ? true : undefined}
+                aria-describedby={
+                  fieldErrors.label ? errorId("label") : undefined
+                }
+                onChange={() => markEdited("label")}
               />
-            </div>
+              <FieldError id={errorId("label")}>{fieldErrors.label}</FieldError>
+            </Field>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="maxUses">Giới hạn lượt</Label>
+              <Field data-invalid={fieldErrors.maxUses ? true : undefined}>
+                <FieldLabel htmlFor="maxUses">Giới hạn lượt</FieldLabel>
                 <Input
                   id="maxUses"
                   name="maxUses"
                   type="number"
                   min={1}
                   placeholder="Không giới hạn"
+                  aria-invalid={fieldErrors.maxUses ? true : undefined}
+                  aria-describedby={
+                    fieldErrors.maxUses ? errorId("maxUses") : undefined
+                  }
+                  onChange={() => markEdited("maxUses")}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="expiresDays">Hết hạn sau (ngày)</Label>
+                <FieldError id={errorId("maxUses")}>
+                  {fieldErrors.maxUses}
+                </FieldError>
+              </Field>
+              <Field data-invalid={fieldErrors.expiresDays ? true : undefined}>
+                <FieldLabel htmlFor="expiresDays">
+                  Hết hạn sau (ngày)
+                </FieldLabel>
                 <Input
                   id="expiresDays"
                   name="expiresDays"
                   type="number"
                   min={1}
                   placeholder="Không hết hạn"
+                  aria-invalid={fieldErrors.expiresDays ? true : undefined}
+                  aria-describedby={
+                    fieldErrors.expiresDays ? errorId("expiresDays") : undefined
+                  }
+                  onChange={() => markEdited("expiresDays")}
                 />
-              </div>
+                <FieldError id={errorId("expiresDays")}>
+                  {fieldErrors.expiresDays}
+                </FieldError>
+              </Field>
             </div>
 
-            <SubmitButton className="w-full">
+            <SubmitButton className="w-full" pending={creating}>
               <Plus />
               Tạo link mời
             </SubmitButton>

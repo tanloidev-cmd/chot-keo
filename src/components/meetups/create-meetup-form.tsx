@@ -20,6 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -48,6 +49,12 @@ type VenueOption = {
   name: string;
   address: string;
   note: string;
+};
+
+type CreateFieldErrors = {
+  groupId?: string;
+  title?: string;
+  timeOptions?: string;
 };
 
 function pad(value: number) {
@@ -85,6 +92,7 @@ export function CreateMeetupForm({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<CreateFieldErrors>({});
 
   const [groupId, setGroupId] = useState(defaultGroupId ?? groups[0]?.id ?? "");
   const [title, setTitle] = useState("");
@@ -114,21 +122,26 @@ export function CreateMeetupForm({
     );
   }
 
+  function clearFieldError(field: keyof CreateFieldErrors) {
+    setFieldErrors((current) =>
+      current[field] ? { ...current, [field]: undefined } : current,
+    );
+  }
+
   function submit() {
     setError("");
 
-    if (!groupId) {
-      setError("Chọn nhóm.");
-      return;
-    }
+    const issues: CreateFieldErrors = {};
 
-    if (!title.trim()) {
-      setError("Nhập tên kèo.");
-      return;
-    }
+    if (!groupId) issues.groupId = "Chọn nhóm.";
+    if (!title.trim()) issues.title = "Nhập tên kèo.";
 
     if (timeOptions.some((option) => !option.startsAt || !option.endsAt)) {
-      setError("Nhập đầy đủ thời gian bắt đầu và kết thúc.");
+      issues.timeOptions = "Nhập đầy đủ thời gian bắt đầu và kết thúc.";
+    }
+
+    if (Object.values(issues).some(Boolean)) {
+      setFieldErrors(issues);
       return;
     }
 
@@ -139,9 +152,13 @@ export function CreateMeetupForm({
     }));
 
     if (payloadTimeOptions.some((option) => option.startsAt >= option.endsAt)) {
-      setError("Thời gian kết thúc phải sau thời gian bắt đầu.");
+      setFieldErrors({
+        timeOptions: "Thời gian kết thúc phải sau thời gian bắt đầu.",
+      });
       return;
     }
+
+    setFieldErrors({});
 
     startTransition(async () => {
       const result = await createMeetupAction({
@@ -189,10 +206,24 @@ export function CreateMeetupForm({
           <CardDescription>Đặt tên ngắn gọn, dễ hiểu.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Nhóm</Label>
-            <Select value={groupId} onValueChange={setGroupId}>
-              <SelectTrigger className="w-full">
+          <Field data-invalid={fieldErrors.groupId ? true : undefined}>
+            <FieldLabel>Nhóm</FieldLabel>
+            <Select
+              value={groupId}
+              onValueChange={(value) => {
+                setGroupId(value);
+                clearFieldError("groupId");
+              }}
+            >
+              <SelectTrigger
+                className="w-full"
+                aria-invalid={fieldErrors.groupId ? true : undefined}
+                aria-describedby={
+                  fieldErrors.groupId
+                    ? "create-meetup-groupId-error"
+                    : undefined
+                }
+              >
                 <SelectValue placeholder="Chọn nhóm" />
               </SelectTrigger>
               <SelectContent>
@@ -203,20 +234,33 @@ export function CreateMeetupForm({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+            <FieldError id="create-meetup-groupId-error">
+              {fieldErrors.groupId}
+            </FieldError>
+          </Field>
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Tên kèo</Label>
+          <Field data-invalid={fieldErrors.title ? true : undefined}>
+            <FieldLabel htmlFor="title">Tên kèo</FieldLabel>
             <Input
               id="title"
               value={title}
-              onChange={(event) => setTitle(event.target.value)}
+              onChange={(event) => {
+                setTitle(event.target.value);
+                clearFieldError("title");
+              }}
               placeholder="Ví dụ: Cà phê sáng thứ Bảy"
               maxLength={120}
               className="h-11"
               required
+              aria-invalid={fieldErrors.title ? true : undefined}
+              aria-describedby={
+                fieldErrors.title ? "create-meetup-title-error" : undefined
+              }
             />
-          </div>
+            <FieldError id="create-meetup-title-error">
+              {fieldErrors.title}
+            </FieldError>
+          </Field>
 
           <div className="space-y-2">
             <Label htmlFor="description">Mô tả (tùy chọn)</Label>
@@ -275,6 +319,10 @@ export function CreateMeetupForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
+          <FieldError id="create-meetup-timeOptions-error">
+            {fieldErrors.timeOptions}
+          </FieldError>
+
           {timeOptions.map((option, index) => (
             <div key={index} className="space-y-2 rounded-xl border p-3">
               <div className="flex items-center justify-between">
@@ -302,9 +350,11 @@ export function CreateMeetupForm({
                     id={`start-${index}`}
                     type="datetime-local"
                     value={option.startsAt}
-                    onChange={(event) =>
-                      updateTime(index, { startsAt: event.target.value })
-                    }
+                    aria-invalid={fieldErrors.timeOptions ? true : undefined}
+                    onChange={(event) => {
+                      updateTime(index, { startsAt: event.target.value });
+                      clearFieldError("timeOptions");
+                    }}
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -313,9 +363,11 @@ export function CreateMeetupForm({
                     id={`end-${index}`}
                     type="datetime-local"
                     value={option.endsAt}
-                    onChange={(event) =>
-                      updateTime(index, { endsAt: event.target.value })
-                    }
+                    aria-invalid={fieldErrors.timeOptions ? true : undefined}
+                    onChange={(event) => {
+                      updateTime(index, { endsAt: event.target.value });
+                      clearFieldError("timeOptions");
+                    }}
                   />
                 </div>
               </div>

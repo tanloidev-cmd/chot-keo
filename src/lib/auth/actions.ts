@@ -13,24 +13,35 @@ import {
   hashRecoveryCode,
 } from "@/lib/auth/recovery";
 import { requireUser } from "@/lib/auth/session";
+import {
+  AUTH_FIELD_MESSAGES,
+  DISPLAY_NAME_MAX_LENGTH,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "@/lib/auth/validation";
+import {
+  collectFieldErrors,
+  type FieldErrors,
+} from "@/lib/forms/field-errors";
 import { adminRpc, createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = {
   error?: string;
+  fieldErrors?: FieldErrors;
   recoveryCode?: string;
   success?: string;
 };
 
 const phoneField = z
   .string()
-  .min(8, "Nhập số điện thoại")
+  .min(8, AUTH_FIELD_MESSAGES.phoneRequired)
   .transform((value, ctx) => {
     const normalized = normalizePhone(value);
     if (!normalized) {
       ctx.addIssue({
         code: "custom",
-        message: "Số điện thoại Việt Nam không hợp lệ",
+        message: AUTH_FIELD_MESSAGES.phoneInvalid,
       });
       return z.NEVER;
     }
@@ -39,17 +50,17 @@ const phoneField = z
 
 const passwordField = z
   .string()
-  .min(8, "Mật khẩu cần ít nhất 8 ký tự")
-  .max(72, "Mật khẩu tối đa 72 ký tự")
-  .regex(/[A-Za-z]/, "Mật khẩu cần có chữ")
-  .regex(/[0-9]/, "Mật khẩu cần có số");
+  .min(PASSWORD_MIN_LENGTH, AUTH_FIELD_MESSAGES.passwordMin)
+  .max(PASSWORD_MAX_LENGTH, AUTH_FIELD_MESSAGES.passwordMax)
+  .regex(/[A-Za-z]/, AUTH_FIELD_MESSAGES.passwordLetter)
+  .regex(/[0-9]/, AUTH_FIELD_MESSAGES.passwordNumber);
 
 const registerSchema = z.object({
   displayName: z
     .string()
     .trim()
-    .min(1, "Nhập tên hiển thị")
-    .max(60, "Tên tối đa 60 ký tự"),
+    .min(1, AUTH_FIELD_MESSAGES.displayNameRequired)
+    .max(DISPLAY_NAME_MAX_LENGTH, AUTH_FIELD_MESSAGES.displayNameTooLong),
   phone: phoneField,
   password: passwordField,
 });
@@ -61,7 +72,7 @@ const loginSchema = z.object({
 
 const recoverySchema = z.object({
   phone: phoneField,
-  code: z.string().min(8, "Nhập mã khôi phục"),
+  code: z.string().min(8, AUTH_FIELD_MESSAGES.recoveryCodeMin),
   password: passwordField,
 });
 
@@ -72,6 +83,10 @@ function safeNext(value: FormDataEntryValue | null): string {
   }
   return next;
 }
+
+const REGISTER_FIELDS = ["displayName", "phone", "password"] as const;
+const LOGIN_FIELDS = ["phone", "password"] as const;
+const RECOVERY_FIELDS = ["phone", "code", "password"] as const;
 
 async function verifyTurnstile(token: FormDataEntryValue | null) {
   const secret = process.env.TURNSTILE_SECRET_KEY;
@@ -138,13 +153,13 @@ export async function registerAction(
   formData: FormData,
 ): Promise<AuthState> {
   const parsed = registerSchema.safeParse({
-    displayName: formData.get("displayName"),
-    phone: formData.get("phone"),
-    password: formData.get("password"),
+    displayName: String(formData.get("displayName") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    password: String(formData.get("password") ?? ""),
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu chưa hợp lệ" };
+    return { fieldErrors: collectFieldErrors(parsed.error, REGISTER_FIELDS) };
   }
 
   if (!(await verifyTurnstile(formData.get("turnstileToken")))) {
@@ -182,17 +197,26 @@ export async function registerAction(
   }
 
   const recoveryCode = generateRecoveryCode();
-  const { error: recoveryError } = await adminRpc(
-    "create_account_recovery",
-    {
-      p_user_id: created.user.id,
-      p_phone: parsed.data.phone,
-      p_hash: hashRecoveryCode(recoveryCode),
-    },
-  );
+  let recoveryFailed = false;
 
-  if (recoveryError) {
-    await admin.auth.admin.deleteUser(created.user.id);
+  try {
+    const { error: recoveryError } = await adminRpc(
+      "create_account_recovery",
+      {
+        p_user_id: created.user.id,
+        p_phone: parsed.data.phone,
+        p_hash: hashRecoveryCode(recoveryCode),
+      },
+    );
+    recoveryFailed = Boolean(recoveryError);
+  } catch {
+    // A thrown RPC (network, missing function) must not leave an account the
+    // user cannot recover: roll back and report instead of crashing the page.
+    recoveryFailed = true;
+  }
+
+  if (recoveryFailed) {
+    await admin.auth.admin.deleteUser(created.user.id).catch(() => undefined);
     return {
       error:
         "Không thể tạo mã khôi phục. Thử lại hoặc kiểm tra migration/RLS.",
@@ -220,12 +244,12 @@ export async function loginAction(
   formData: FormData,
 ): Promise<AuthState> {
   const parsed = loginSchema.safeParse({
-    phone: formData.get("phone"),
-    password: formData.get("password"),
+    phone: String(formData.get("phone") ?? ""),
+    password: String(formData.get("password") ?? ""),
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu chưa hợp lệ" };
+    return { fieldErrors: collectFieldErrors(parsed.error, LOGIN_FIELDS) };
   }
 
   if (
@@ -262,13 +286,13 @@ export async function resetPasswordWithCodeAction(
   formData: FormData,
 ): Promise<AuthState> {
   const parsed = recoverySchema.safeParse({
-    phone: formData.get("phone"),
-    code: formData.get("code"),
-    password: formData.get("password"),
+    phone: String(formData.get("phone") ?? ""),
+    code: String(formData.get("code") ?? ""),
+    password: String(formData.get("password") ?? ""),
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu chưa hợp lệ" };
+    return { fieldErrors: collectFieldErrors(parsed.error, RECOVERY_FIELDS) };
   }
 
   if (
@@ -327,11 +351,21 @@ export async function changePasswordAction(
   const currentPassword = String(formData.get("currentPassword") ?? "");
   const newPassword = String(formData.get("newPassword") ?? "");
 
-  if (!currentPassword) return { error: "Nhập mật khẩu hiện tại" };
+  const fieldErrors: FieldErrors = {};
+
+  if (!currentPassword) {
+    fieldErrors.currentPassword = "Nhập mật khẩu hiện tại";
+  }
 
   const parsed = passwordField.safeParse(newPassword);
+
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Mật khẩu quá yếu" };
+    fieldErrors.newPassword =
+      parsed.error.issues[0]?.message ?? "Mật khẩu quá yếu";
+  }
+
+  if (Object.values(fieldErrors).some(Boolean)) {
+    return { fieldErrors };
   }
 
   const user = await requireUser();
@@ -346,7 +380,7 @@ export async function changePasswordAction(
   });
 
   if (reauthError) {
-    return { error: "Mật khẩu hiện tại không đúng." };
+    return { fieldErrors: { currentPassword: "Mật khẩu hiện tại không đúng." } };
   }
 
   const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -361,13 +395,20 @@ export async function updateProfileAction(
 ): Promise<AuthState> {
   const displayName = String(formData.get("displayName") ?? "").trim();
   const timezone = String(formData.get("timezone") ?? "Asia/Ho_Chi_Minh");
+  const fieldErrors: FieldErrors = {};
 
-  if (displayName.length < 1 || displayName.length > 60) {
-    return { error: "Tên hiển thị cần từ 1 đến 60 ký tự." };
+  if (displayName.length < 1) {
+    fieldErrors.displayName = AUTH_FIELD_MESSAGES.displayNameRequired;
+  } else if (displayName.length > DISPLAY_NAME_MAX_LENGTH) {
+    fieldErrors.displayName = AUTH_FIELD_MESSAGES.displayNameTooLong;
   }
 
   if (timezone.length > 80) {
-    return { error: "Múi giờ không hợp lệ." };
+    fieldErrors.timezone = "Múi giờ không hợp lệ.";
+  }
+
+  if (Object.values(fieldErrors).some(Boolean)) {
+    return { fieldErrors };
   }
 
   const user = await requireUser();

@@ -5,11 +5,13 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth/session";
+import type { FieldErrors } from "@/lib/forms/field-errors";
 import { createClient } from "@/lib/supabase/server";
 import type { ActivityType, RsvpStatus } from "@/lib/types";
 
 export type MeetupState = {
   error?: string;
+  fieldErrors?: FieldErrors;
   success?: string;
   meetupId?: string;
 };
@@ -350,11 +352,43 @@ export async function updateMeetupAction(
   const meetupId = String(formData.get("meetupId") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const activityType = String(formData.get("activityType") ?? "hangout");
-  const votingDeadline = String(formData.get("votingDeadline") ?? "");
+  const rawActivityType = String(formData.get("activityType") ?? "hangout");
+  const votingDeadline = String(formData.get("votingDeadline") ?? "").trim();
 
   if (!meetupId) return { error: "Thiếu kèo." };
-  if (!title) return { error: "Nhập tên kèo." };
+
+  const fieldErrors: FieldErrors = {};
+
+  if (!title) {
+    fieldErrors.title = "Nhập tên kèo.";
+  } else if (title.length > 120) {
+    fieldErrors.title = "Tên kèo tối đa 120 ký tự.";
+  }
+
+  if (description.length > 1000) {
+    fieldErrors.description = "Mô tả tối đa 1000 ký tự.";
+  }
+
+  // `new Date("").toISOString()` and invalid dates throw, so validate first.
+  const deadline = votingDeadline ? new Date(votingDeadline) : null;
+
+  if (deadline && Number.isNaN(deadline.getTime())) {
+    fieldErrors.votingDeadline = "Hạn bình chọn không hợp lệ.";
+  }
+
+  if (Object.values(fieldErrors).some(Boolean)) {
+    return { fieldErrors };
+  }
+
+  const activityType = [
+    "food",
+    "coffee",
+    "hangout",
+    "sport",
+    "other",
+  ].includes(rawActivityType)
+    ? rawActivityType
+    : "hangout";
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -363,9 +397,7 @@ export async function updateMeetupAction(
       title,
       description: description || null,
       activity_type: activityType,
-      voting_deadline: votingDeadline
-        ? new Date(votingDeadline).toISOString()
-        : null,
+      voting_deadline: deadline ? deadline.toISOString() : null,
     })
     .eq("id", meetupId);
 

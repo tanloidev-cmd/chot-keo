@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { AlertCircle, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,8 +14,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -33,6 +37,7 @@ import {
   type MeetupState,
 } from "@/lib/actions/meetups";
 import { formatDateTimeInZone } from "@/lib/dates";
+import { useFieldForm } from "@/lib/forms/use-field-form";
 import type {
   ActivityType,
   Meetup,
@@ -41,6 +46,7 @@ import type {
 } from "@/lib/types";
 
 const initialState: MeetupState = {};
+const FIELDS = ["title", "description", "votingDeadline"] as const;
 
 function toLocalInput(value: string) {
   const date = new Date(value);
@@ -59,7 +65,20 @@ export function EditMeetupForm({
   timeOptions: MeetupTimeOption[];
   venueOptions: MeetupVenueOption[];
 }) {
-  const [state, formAction] = useActionState(updateMeetupAction, initialState);
+  const {
+    state,
+    fieldErrors,
+    onSubmit,
+    markEdited,
+    formRef,
+    errorId,
+    pending: formPending,
+  } = useFieldForm({
+    action: updateMeetupAction,
+    initialState,
+    id: "edit-meetup",
+    fieldOrder: FIELDS,
+  });
   const [pending, startTransition] = useTransition();
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
@@ -123,7 +142,7 @@ export function EditMeetupForm({
           <CardDescription>Chỉnh sửa tên, mô tả và hạn bình chọn.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={formAction} className="space-y-4">
+          <form ref={formRef} onSubmit={onSubmit} noValidate className="space-y-4">
             <input type="hidden" name="meetupId" value={meetup.id} />
             {state.error ? (
               <Alert variant="destructive">
@@ -132,8 +151,8 @@ export function EditMeetupForm({
               </Alert>
             ) : null}
 
-            <div className="space-y-2">
-              <Label htmlFor="title">Tên kèo</Label>
+            <Field data-invalid={fieldErrors.title ? true : undefined}>
+              <FieldLabel htmlFor="title">Tên kèo</FieldLabel>
               <Input
                 id="title"
                 name="title"
@@ -141,23 +160,37 @@ export function EditMeetupForm({
                 maxLength={120}
                 className="h-11"
                 required
+                aria-invalid={fieldErrors.title ? true : undefined}
+                aria-describedby={
+                  fieldErrors.title ? errorId("title") : undefined
+                }
+                onChange={() => markEdited("title")}
               />
-            </div>
+              <FieldError id={errorId("title")}>{fieldErrors.title}</FieldError>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Mô tả</Label>
+            <Field data-invalid={fieldErrors.description ? true : undefined}>
+              <FieldLabel htmlFor="description">Mô tả</FieldLabel>
               <Textarea
                 id="description"
                 name="description"
                 defaultValue={meetup.description ?? ""}
                 maxLength={1000}
                 rows={3}
+                aria-invalid={fieldErrors.description ? true : undefined}
+                aria-describedby={
+                  fieldErrors.description ? errorId("description") : undefined
+                }
+                onChange={() => markEdited("description")}
               />
-            </div>
+              <FieldError id={errorId("description")}>
+                {fieldErrors.description}
+              </FieldError>
+            </Field>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Loại hoạt động</Label>
+              <Field>
+                <FieldLabel>Loại hoạt động</FieldLabel>
                 <input type="hidden" name="activityType" value={activityType} />
                 <Select
                   value={activityType}
@@ -174,9 +207,9 @@ export function EditMeetupForm({
                     <SelectItem value="other">Khác</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="votingDeadline">Hạn bình chọn</Label>
+              </Field>
+              <Field data-invalid={fieldErrors.votingDeadline ? true : undefined}>
+                <FieldLabel htmlFor="votingDeadline">Hạn bình chọn</FieldLabel>
                 <Input
                   id="votingDeadline"
                   name="votingDeadline"
@@ -186,11 +219,23 @@ export function EditMeetupForm({
                       ? toLocalInput(meetup.voting_deadline)
                       : ""
                   }
+                  aria-invalid={
+                    fieldErrors.votingDeadline ? true : undefined
+                  }
+                  aria-describedby={
+                    fieldErrors.votingDeadline
+                      ? errorId("votingDeadline")
+                      : undefined
+                  }
+                  onChange={() => markEdited("votingDeadline")}
                 />
-              </div>
+                <FieldError id={errorId("votingDeadline")}>
+                  {fieldErrors.votingDeadline}
+                </FieldError>
+              </Field>
             </div>
 
-            <SubmitButton>Lưu thay đổi</SubmitButton>
+            <SubmitButton pending={formPending}>Lưu thay đổi</SubmitButton>
           </form>
         </CardContent>
       </Card>

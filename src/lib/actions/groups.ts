@@ -2,16 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 
 import { hashInviteToken } from "@/lib/auth/recovery";
 import { requireUser } from "@/lib/auth/session";
 import { publicEnv } from "@/lib/env";
+import type { FieldErrors } from "@/lib/forms/field-errors";
+import { parseGroupFormData } from "@/lib/groups/validation";
 import { createClient } from "@/lib/supabase/server";
 import type { GroupRole } from "@/lib/types";
 
 export type ActionState = {
   error?: string;
+  fieldErrors?: FieldErrors;
   success?: string;
 };
 
@@ -19,26 +21,14 @@ export type InviteState = ActionState & {
   url?: string;
 };
 
-const groupSchema = z.object({
-  name: z.string().trim().min(1, "Nhập tên nhóm").max(80, "Tên tối đa 80 ký tự"),
-  description: z.string().trim().max(500, "Mô tả tối đa 500 ký tự").optional(),
-  rules: z.string().trim().max(1000, "Quy tắc tối đa 1000 ký tự").optional(),
-  timezone: z.string().max(80).default("Asia/Ho_Chi_Minh"),
-});
-
 export async function createGroupAction(
   _previous: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const parsed = groupSchema.safeParse({
-    name: formData.get("name"),
-    description: formData.get("description"),
-    rules: formData.get("rules"),
-    timezone: formData.get("timezone") || "Asia/Ho_Chi_Minh",
-  });
+  const parsed = parseGroupFormData(formData);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu chưa hợp lệ" };
+    return { fieldErrors: parsed.fieldErrors };
   }
 
   const user = await requireUser();
@@ -68,16 +58,11 @@ export async function updateGroupAction(
   formData: FormData,
 ): Promise<ActionState> {
   const groupId = String(formData.get("groupId") ?? "");
-  const parsed = groupSchema.safeParse({
-    name: formData.get("name"),
-    description: formData.get("description"),
-    rules: formData.get("rules"),
-    timezone: formData.get("timezone") || "Asia/Ho_Chi_Minh",
-  });
+  const parsed = parseGroupFormData(formData);
 
   if (!groupId) return { error: "Thiếu nhóm." };
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu chưa hợp lệ" };
+    return { fieldErrors: parsed.fieldErrors };
   }
 
   const supabase = await createClient();
@@ -109,23 +94,30 @@ export async function createInviteAction(
 
   if (!groupId) return { error: "Thiếu nhóm." };
 
-  if (label.length > 80) return { error: "Nhãn tối đa 80 ký tự." };
-
+  const fieldErrors: FieldErrors = {};
   const maxUses = maxUsesRaw ? Number(maxUsesRaw) : null;
   const expiresDays = expiresDaysRaw ? Number(expiresDaysRaw) : null;
+
+  if (label.length > 80) {
+    fieldErrors.label = "Nhãn tối đa 80 ký tự.";
+  }
 
   if (
     maxUses !== null &&
     (!Number.isInteger(maxUses) || maxUses < 1 || maxUses > 10_000)
   ) {
-    return { error: "Giới hạn lượt dùng phải từ 1 đến 10.000." };
+    fieldErrors.maxUses = "Giới hạn lượt dùng phải từ 1 đến 10.000.";
   }
 
   if (
     expiresDays !== null &&
     (!Number.isInteger(expiresDays) || expiresDays < 1 || expiresDays > 3650)
   ) {
-    return { error: "Thời hạn phải từ 1 đến 3650 ngày." };
+    fieldErrors.expiresDays = "Thời hạn phải từ 1 đến 3650 ngày.";
+  }
+
+  if (Object.values(fieldErrors).some(Boolean)) {
+    return { fieldErrors };
   }
 
   const user = await requireUser();

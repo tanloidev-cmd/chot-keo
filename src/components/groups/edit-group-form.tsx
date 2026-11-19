@@ -1,21 +1,36 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { AlertCircle, Pencil } from "lucide-react";
 
 import { SubmitButton } from "@/components/forms/submit-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateGroupAction, type ActionState } from "@/lib/actions/groups";
+import { useFieldForm } from "@/lib/forms/use-field-form";
 import type { Group } from "@/lib/types";
 
 const initialState: ActionState = {};
+const FIELDS = ["name", "description", "rules"] as const;
 
 export function EditGroupForm({ group }: { group: Group }) {
-  const [state, formAction] = useActionState(updateGroupAction, initialState);
   const [editing, setEditing] = useState(false);
+  const {
+    state,
+    fieldErrors,
+    onSubmit,
+    markEdited,
+    formRef,
+    errorId,
+    pending,
+  } = useFieldForm({
+    action: updateGroupAction,
+    initialState,
+    id: "edit-group",
+    fieldOrder: FIELDS,
+  });
 
   if (!editing) {
     return (
@@ -46,7 +61,12 @@ export function EditGroupForm({ group }: { group: Group }) {
   }
 
   return (
-    <form action={formAction} className="space-y-3 rounded-xl border bg-card p-4">
+    <form
+      ref={formRef}
+      onSubmit={onSubmit}
+      noValidate
+      className="space-y-3 rounded-xl border bg-card p-4"
+    >
       <input type="hidden" name="groupId" value={group.id} />
       {state.error ? (
         <Alert variant="destructive">
@@ -54,28 +74,43 @@ export function EditGroupForm({ group }: { group: Group }) {
           <AlertDescription>{state.error}</AlertDescription>
         </Alert>
       ) : null}
-      <div className="space-y-2">
-        <Label htmlFor="group-name">Tên nhóm</Label>
+
+      <Field data-invalid={fieldErrors.name ? true : undefined}>
+        <FieldLabel htmlFor="group-name">Tên nhóm</FieldLabel>
         <Input
           id="group-name"
           name="name"
           defaultValue={group.name}
           maxLength={80}
           required
+          aria-invalid={fieldErrors.name ? true : undefined}
+          aria-describedby={fieldErrors.name ? errorId("name") : undefined}
+          onChange={() => markEdited("name")}
         />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="group-description">Mô tả</Label>
+        <FieldError id={errorId("name")}>{fieldErrors.name}</FieldError>
+      </Field>
+
+      <Field data-invalid={fieldErrors.description ? true : undefined}>
+        <FieldLabel htmlFor="group-description">Mô tả</FieldLabel>
         <Textarea
           id="group-description"
           name="description"
           defaultValue={group.description ?? ""}
           maxLength={500}
           rows={3}
+          aria-invalid={fieldErrors.description ? true : undefined}
+          aria-describedby={
+            fieldErrors.description ? errorId("description") : undefined
+          }
+          onChange={() => markEdited("description")}
         />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="group-rules">Quy tắc nhóm (tùy chọn)</Label>
+        <FieldError id={errorId("description")}>
+          {fieldErrors.description}
+        </FieldError>
+      </Field>
+
+      <Field data-invalid={fieldErrors.rules ? true : undefined}>
+        <FieldLabel htmlFor="group-rules">Quy tắc nhóm (tùy chọn)</FieldLabel>
         <Textarea
           id="group-rules"
           name="rules"
@@ -83,11 +118,16 @@ export function EditGroupForm({ group }: { group: Group }) {
           maxLength={1000}
           rows={3}
           placeholder="Ví dụ: báo bận trước 24h, không réo muộn..."
+          aria-invalid={fieldErrors.rules ? true : undefined}
+          aria-describedby={fieldErrors.rules ? errorId("rules") : undefined}
+          onChange={() => markEdited("rules")}
         />
-      </div>
+        <FieldError id={errorId("rules")}>{fieldErrors.rules}</FieldError>
+      </Field>
+
       <input type="hidden" name="timezone" value={group.timezone} />
       <div className="flex gap-2">
-        <SubmitButton>Lưu</SubmitButton>
+        <SubmitButton pending={pending}>Lưu</SubmitButton>
         <button
           type="button"
           onClick={() => setEditing(false)}

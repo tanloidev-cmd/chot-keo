@@ -1,21 +1,35 @@
 "use client";
 
-import { useActionState } from "react";
 import { AlertCircle, KeyRound } from "lucide-react";
 
 import { SubmitButton } from "@/components/forms/submit-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { changePasswordAction, type AuthState } from "@/lib/auth/actions";
+import { useFieldForm } from "@/lib/forms/use-field-form";
 
 const initialState: AuthState = {};
+const FIELDS = ["currentPassword", "newPassword"] as const;
 
 export function ChangePasswordForm() {
-  const [state, formAction] = useActionState(changePasswordAction, initialState);
+  const {
+    state,
+    fieldErrors,
+    onSubmit,
+    markEdited,
+    formRef,
+    errorId,
+    pending,
+  } = useFieldForm({
+    action: changePasswordAction,
+    initialState,
+    id: "change-password",
+    fieldOrder: FIELDS,
+  });
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} onSubmit={onSubmit} noValidate className="space-y-4">
       {state.error ? (
         <Alert variant="destructive">
           <AlertCircle />
@@ -30,8 +44,8 @@ export function ChangePasswordForm() {
         </Alert>
       ) : null}
 
-      <div className="space-y-2">
-        <Label htmlFor="currentPassword">Mật khẩu hiện tại</Label>
+      <Field data-invalid={fieldErrors.currentPassword ? true : undefined}>
+        <FieldLabel htmlFor="currentPassword">Mật khẩu hiện tại</FieldLabel>
         <Input
           id="currentPassword"
           name="currentPassword"
@@ -39,11 +53,19 @@ export function ChangePasswordForm() {
           autoComplete="current-password"
           className="h-11"
           required
+          aria-invalid={fieldErrors.currentPassword ? true : undefined}
+          aria-describedby={
+            fieldErrors.currentPassword ? errorId("currentPassword") : undefined
+          }
+          onChange={() => markEdited("currentPassword")}
         />
-      </div>
+        <FieldError id={errorId("currentPassword")}>
+          {fieldErrors.currentPassword}
+        </FieldError>
+      </Field>
 
-      <div className="space-y-2">
-        <Label htmlFor="newPassword">Mật khẩu mới</Label>
+      <Field data-invalid={fieldErrors.newPassword ? true : undefined}>
+        <FieldLabel htmlFor="newPassword">Mật khẩu mới</FieldLabel>
         <Input
           id="newPassword"
           name="newPassword"
@@ -52,10 +74,18 @@ export function ChangePasswordForm() {
           placeholder="Ít nhất 8 ký tự, có chữ và số"
           className="h-11"
           required
+          aria-invalid={fieldErrors.newPassword ? true : undefined}
+          aria-describedby={
+            fieldErrors.newPassword ? errorId("newPassword") : undefined
+          }
+          onChange={() => markEdited("newPassword")}
         />
-      </div>
+        <FieldError id={errorId("newPassword")}>
+          {fieldErrors.newPassword}
+        </FieldError>
+      </Field>
 
-      <SubmitButton>
+      <SubmitButton pending={pending}>
         <KeyRound />
         Đổi mật khẩu
       </SubmitButton>
