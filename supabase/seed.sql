@@ -1,0 +1,2 @@
+-- Demo data is created by scripts/seed-demo.mjs because Auth users must be
+-- created through the Supabase Admin API. Run: npm run seed:demo
