@@ -60,7 +60,7 @@ export function RegisterForm({ next }: { next?: string }) {
         <CardHeader>
           <CardTitle className="text-xl">Tạo tài khoản</CardTitle>
           <CardDescription>
-            Chỉ cần số điện thoại. Không cần email, không chờ mã SMS.
+            Chỉ cần số điện thoại. Không cần email, không chờ tin nhắn.
           </CardDescription>
         </CardHeader>
         <CardContent>

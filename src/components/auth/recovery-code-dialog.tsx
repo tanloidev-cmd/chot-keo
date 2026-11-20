@@ -35,9 +35,9 @@ export function RecoveryCodeDialog({
     try {
       await navigator.clipboard.writeText(code);
       setCopied(true);
-      toast.success("Đã copy mã khôi phục");
+      toast.success("Đã sao chép mã khôi phục");
     } catch {
-      toast.error("Không copy được. Hãy chụp màn hình mã này.");
+      toast.error("Không sao chép được. Hãy chụp màn hình mã này.");
     }
   }
 
@@ -61,10 +61,14 @@ export function RecoveryCodeDialog({
           onClick={copy}
           className="flex w-full items-center justify-between gap-3 rounded-xl border bg-muted/40 px-4 py-4 text-left"
         >
-          <span className="font-mono text-lg font-semibold tracking-wider">
+          <span className="min-w-0 font-mono text-base font-semibold tracking-wider break-all sm:text-lg">
             {code}
           </span>
-          {copied ? <Check className="text-emerald-600" /> : <Copy />}
+          {copied ? (
+            <Check className="shrink-0 text-emerald-600" />
+          ) : (
+            <Copy className="shrink-0" />
+          )}
         </button>
 
         <p className="text-xs text-muted-foreground">

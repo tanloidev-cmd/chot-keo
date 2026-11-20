@@ -41,7 +41,7 @@ export default async function NotificationsPage() {
         <EmptyState
           icon={<Bell />}
           title="Chưa có thông báo"
-          description="Khi có kèo mới, RSVP hoặc yêu cầu hủy, thông báo sẽ xuất hiện ở đây."
+          description="Khi có kèo mới, xác nhận tham gia hoặc yêu cầu hủy, thông báo sẽ xuất hiện ở đây."
         />
       ) : (
         <div className="space-y-2">

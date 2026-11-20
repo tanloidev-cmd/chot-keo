@@ -30,13 +30,13 @@ const features = [
   },
   {
     icon: UsersRound,
-    title: "RSVP & chủ xị",
+    title: "Xác nhận tham gia & chủ xị",
     body: "Biết ai sẽ đi, ai còn chờ và giao người phụ trách kèo.",
   },
   {
     icon: ShieldCheck,
     title: "Riêng tư theo nhóm",
-    body: "Dữ liệu được tách theo nhóm, phân quyền Owner / Admin / Member.",
+    body: "Dữ liệu được tách theo nhóm, phân quyền Chủ nhóm / Trợ thủ / Thành viên.",
   },
 ];
 
@@ -73,19 +73,20 @@ export default async function LandingPage() {
           <div>
             <Badge className="bg-emerald-100 text-emerald-800">
               <MailX className="size-3.5" />
-              Không cần email, không chờ SMS
+              Không cần email, không chờ tin nhắn
             </Badge>
             <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight md:text-5xl">
               Chốt lịch gặp nhóm bạn trong vài lần chạm.
             </h1>
             <p className="mt-4 max-w-xl text-balance text-base text-muted-foreground md:text-lg">
-              Khai báo lịch rảnh, bình chọn ngày giờ và địa điểm, RSVP và giao
-              chủ xị — tất cả trong một đường link dễ chia sẻ qua Zalo.
+              Khai báo lịch rảnh, bình chọn ngày giờ và địa điểm, xác nhận tham
+              gia và giao chủ xị — tất cả trong một đường dẫn dễ chia sẻ qua
+              Zalo.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-11">
                 <Link href="/register">
-                  Tạo tài khoản bằng SĐT
+                  Tạo tài khoản bằng số điện thoại
                   <ArrowRight />
                 </Link>
               </Button>
@@ -96,15 +97,15 @@ export default async function LandingPage() {
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="size-4 text-emerald-600" />
-                0 đồng vận hành
+                Không mất phí
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="size-4 text-emerald-600" />
-                Cài như ứng dụng (PWA)
+                Cài lên màn hình chính
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="size-4 text-emerald-600" />
-                Mobile-first
+                Tối ưu cho điện thoại
               </span>
             </div>
           </div>
@@ -139,7 +140,7 @@ export default async function LandingPage() {
               </div>
               <div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3 text-sm">
                 <Sparkles className="size-4 text-primary" />
-                <span>Minh là chủ xị. Nhắc trước 24h và 2h.</span>
+                <span>Minh là chủ xị. Nhắc trước 24 giờ và 2 giờ.</span>
               </div>
             </CardContent>
           </Card>
@@ -172,9 +173,9 @@ export default async function LandingPage() {
           </h2>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {[
-              ["1", "Tạo nhóm", "Tạo nhóm và gửi link mời qua Zalo."],
+              ["1", "Tạo nhóm", "Tạo nhóm và gửi đường dẫn mời qua Zalo."],
               ["2", "Khai báo lịch", "Đánh dấu rảnh/bận cho các ngày cuối tuần."],
-              ["3", "Chốt kèo", "Bình chọn, chốt phương án, RSVP và giao chủ xị."],
+              ["3", "Chốt kèo", "Bình chọn, chốt phương án, xác nhận tham gia và giao chủ xị."],
             ].map(([step, title, body]) => (
               <Card key={step}>
                 <CardContent className="p-4">
@@ -192,7 +193,7 @@ export default async function LandingPage() {
 
       <footer className="border-t bg-background/80">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 px-5 py-6 text-sm text-muted-foreground sm:flex-row">
-          <span>Chốt Kèo — sản phẩm MVP cho nhóm bạn.</span>
+          <span>Chốt Kèo — sản phẩm dành cho nhóm bạn.</span>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-foreground">
               Riêng tư

@@ -117,7 +117,7 @@ export function EditGroupForm({ group }: { group: Group }) {
           defaultValue={group.rules ?? ""}
           maxLength={1000}
           rows={3}
-          placeholder="Ví dụ: báo bận trước 24h, không réo muộn..."
+          placeholder="Ví dụ: báo bận trước 24 giờ, đừng réo muộn..."
           aria-invalid={fieldErrors.rules ? true : undefined}
           aria-describedby={fieldErrors.rules ? errorId("rules") : undefined}
           onChange={() => markEdited("rules")}

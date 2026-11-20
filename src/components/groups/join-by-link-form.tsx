@@ -28,7 +28,7 @@ export function JoinByLinkForm() {
         <Input
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          placeholder="Dán link mời hoặc mã mời"
+          placeholder="Dán đường dẫn mời hoặc mã mời"
           className="h-11 pl-9"
         />
       </div>
@@ -38,7 +38,7 @@ export function JoinByLinkForm() {
         disabled={!token}
         onClick={() => router.push(`/join/${encodeURIComponent(token)}`)}
       >
-        Mở link mời
+        Mở đường dẫn mời
         <ArrowRight />
       </Button>
     </div>

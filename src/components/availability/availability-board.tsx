@@ -401,7 +401,7 @@ export function AvailabilityBoard({
             <Separator />
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
               <UsersRound className="size-3.5" />
-              {detailEntries.length}/{members.length} thành viên đã phản hồi
+              {detailEntries.length}/{members.length} thành viên đã cập nhật
             </p>
           </div>
         </DialogContent>

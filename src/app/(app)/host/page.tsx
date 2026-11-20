@@ -11,7 +11,7 @@ import { formatDateTimeInZone } from "@/lib/dates";
 import { getHostedMeetups, getMeetupAttendeeCounts } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Host dashboard" };
+export const metadata: Metadata = { title: "Kèo tôi phụ trách" };
 
 export default async function HostPage() {
   const { meetups } = await getHostedMeetups();
@@ -23,7 +23,7 @@ export default async function HostPage() {
     const { data } = await supabase
       .from("cancellation_requests")
       .select(
-        "*, profiles!cancellation_requests_user_id_fkey(id, display_name, avatar_url)",
+        "*, profile:profiles!cancellation_requests_user_id_fkey(id, display_name, avatar_url)",
       )
       .in(
         "meetup_id",
@@ -45,7 +45,7 @@ export default async function HostPage() {
   return (
     <div>
       <PageHeader
-        title="Host dashboard"
+        title="Kèo tôi phụ trách"
         description="Các kèo bạn đang phụ trách và việc cần xử lý."
       />
 

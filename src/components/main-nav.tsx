@@ -12,9 +12,9 @@ import {
 import { cn } from "@/lib/utils";
 
 const items = [
-  { href: "/home", label: "Home", icon: House },
+  { href: "/home", label: "Trang chủ", icon: House },
   { href: "/calendar", label: "Lịch", icon: CalendarDays },
-  { href: "/meetups", label: "Meetup", icon: PartyPopper },
+  { href: "/meetups", label: "Kèo", icon: PartyPopper },
   { href: "/groups", label: "Nhóm", icon: Users },
 ];
 

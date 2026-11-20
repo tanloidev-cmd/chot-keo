@@ -24,7 +24,7 @@ export function PageHeader({
         </Button>
       ) : null}
       <div className="min-w-0 flex-1">
-        <h1 className="text-balance text-2xl font-semibold tracking-tight">
+        <h1 className="text-balance break-words text-2xl font-semibold tracking-tight">
           {title}
         </h1>
         {description ? (

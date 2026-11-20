@@ -18,11 +18,12 @@ export default function TermsPage() {
         </p>
         <p>
           Dữ liệu do bạn nhập (lịch rảnh, lý do hủy) được dùng để điều phối trong
-          nhóm. Lý do hủy chỉ Host/Owner/Admin của kèo được xem.
+          nhóm. Lý do hủy chỉ Chủ nhóm, Trợ thủ của nhóm hoặc Chủ xị của kèo
+          được xem.
         </p>
         <p>
-          Dịch vụ được cung cấp “nguyên trạng” cho MVP. Chúng tôi có thể thay đổi
-          tính năng hoặc tạm dừng dịch vụ để bảo trì.
+          Dịch vụ được cung cấp “nguyên trạng”. Chúng tôi có thể thay đổi tính
+          năng hoặc tạm dừng dịch vụ để bảo trì.
         </p>
       </div>
     </div>

@@ -26,7 +26,7 @@ export function OfflineBanner() {
   return (
     <div className="flex items-center justify-center gap-2 bg-amber-100 px-4 py-2 text-xs text-amber-900">
       <WifiOff className="size-3.5" />
-      Bạn đang offline. Một số dữ liệu có thể chưa cập nhật.
+      Bạn đang mất kết nối mạng. Một số dữ liệu có thể chưa cập nhật.
     </div>
   );
 }

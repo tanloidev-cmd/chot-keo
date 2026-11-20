@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertCircle,
@@ -43,6 +48,66 @@ import type { GroupInvite } from "@/lib/types";
 const initialState: InviteState = {};
 const FIELDS = ["label", "maxUses", "expiresDays"] as const;
 
+type SavedLinks = Record<string, string>;
+
+const EMPTY_LINKS: SavedLinks = {};
+const savedLinksCache = new Map<string, SavedLinks>();
+const savedLinksListeners = new Map<string, Set<() => void>>();
+
+function readSavedLinks(key: string): SavedLinks {
+  const cached = savedLinksCache.get(key);
+  if (cached) return cached;
+  if (typeof window === "undefined") return EMPTY_LINKS;
+
+  let links: SavedLinks = EMPTY_LINKS;
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    if (parsed && typeof parsed === "object") {
+      links = Object.fromEntries(
+        Object.entries(parsed).filter(
+          (entry): entry is [string, string] => typeof entry[1] === "string",
+        ),
+      );
+    }
+  } catch {
+    links = EMPTY_LINKS;
+  }
+
+  savedLinksCache.set(key, links);
+  return links;
+}
+
+function writeSavedLinks(key: string, links: SavedLinks) {
+  savedLinksCache.set(key, links);
+  try {
+    window.localStorage.setItem(key, JSON.stringify(links));
+  } catch {
+    // Storage can be unavailable (private mode/quota); the links still stay
+    // available for this session.
+  }
+  savedLinksListeners.get(key)?.forEach((listener) => listener());
+}
+
+function subscribeSavedLinks(key: string, listener: () => void) {
+  let listeners = savedLinksListeners.get(key);
+  if (!listeners) {
+    listeners = new Set();
+    savedLinksListeners.set(key, listeners);
+  }
+  listeners.add(listener);
+
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) savedLinksListeners.delete(key);
+  };
+}
+
+function invalidateSavedLinks(key: string) {
+  savedLinksCache.delete(key);
+  savedLinksListeners.get(key)?.forEach((listener) => listener());
+}
+
 export function InviteManager({
   groupId,
   invites,
@@ -68,6 +133,33 @@ export function InviteManager({
     fieldOrder: FIELDS,
   });
   const [revoking, setRevoking] = useState<string | null>(null);
+  const storageKey = `chot-keo:invite-links:${groupId}`;
+  const savedLinks = useSyncExternalStore(
+    useCallback(
+      (listener) => subscribeSavedLinks(storageKey, listener),
+      [storageKey],
+    ),
+    useCallback(() => readSavedLinks(storageKey), [storageKey]),
+    () => EMPTY_LINKS,
+  );
+
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      if (event.key === storageKey) invalidateSavedLinks(storageKey);
+    }
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!state.inviteId || !state.url) return;
+
+    const current = readSavedLinks(storageKey);
+    if (current[state.inviteId] === state.url) return;
+
+    writeSavedLinks(storageKey, { ...current, [state.inviteId]: state.url });
+  }, [state.inviteId, state.url, storageKey]);
 
   useEffect(() => {
     if (state.success || state.url) router.refresh();
@@ -76,9 +168,9 @@ export function InviteManager({
   async function copy(value: string) {
     try {
       await navigator.clipboard.writeText(value);
-      toast.success("Đã copy link mời");
+      toast.success("Đã sao chép đường dẫn mời");
     } catch {
-      toast.error("Không copy được. Hãy chọn và copy thủ công.");
+      toast.error("Không sao chép được. Hãy chọn và sao chép thủ công.");
     }
   }
 
@@ -86,9 +178,9 @@ export function InviteManager({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Link mời</CardTitle>
+          <CardTitle className="text-lg">Đường dẫn mời</CardTitle>
           <CardDescription>
-            Chỉ Owner/Admin mới có thể tạo và quản lý link mời.
+            Chỉ Chủ nhóm hoặc Trợ thủ mới có thể tạo và quản lý đường dẫn mời.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -101,10 +193,11 @@ export function InviteManager({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Link2 className="size-5 text-primary" />
-            Tạo link mời
+            Tạo đường dẫn mời
           </CardTitle>
           <CardDescription>
-            Link chỉ hiển thị đầy đủ một lần. Có thể giới hạn lượt dùng và thời hạn.
+            Có thể giới hạn lượt dùng và thời hạn. Đường dẫn đầy đủ được lưu
+            trên thiết bị này để sao chép lại khi cần.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -121,28 +214,30 @@ export function InviteManager({
             {state.url ? (
               <Alert className="border-emerald-200 bg-emerald-50">
                 <Check className="text-emerald-700" />
-                <AlertDescription>
+                <AlertDescription className="min-w-0">
                   <p className="font-medium text-emerald-900">
-                    Link mời đã tạo — copy ngay
+                    Đường dẫn mời đã tạo — sao chép ngay
                   </p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <code className="min-w-0 flex-1 truncate rounded-lg bg-white px-2 py-2 text-xs">
+                  <div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <code className="min-w-0 flex-1 rounded-lg bg-white px-2 py-2 text-xs break-all">
                       {state.url}
                     </code>
-                    <Button
-                      type="button"
-                      size="icon-sm"
-                      variant="outline"
-                      onClick={() => copy(state.url ?? "")}
-                      aria-label="Copy link mời"
-                    >
-                      <Copy />
-                    </Button>
-                    <ShareLinkButton
-                      path={state.url ?? ""}
-                      title="Tham gia nhóm trên Chốt Kèo"
-                      label="Chia sẻ"
-                    />
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        variant="outline"
+                        onClick={() => copy(state.url ?? "")}
+                        aria-label="Sao chép đường dẫn mời"
+                      >
+                        <Copy />
+                      </Button>
+                      <ShareLinkButton
+                        path={state.url ?? ""}
+                        title="Tham gia nhóm trên Chốt Kèo"
+                        label="Chia sẻ"
+                      />
+                    </div>
                   </div>
                 </AlertDescription>
               </Alert>
@@ -207,7 +302,7 @@ export function InviteManager({
 
             <SubmitButton className="w-full" pending={creating}>
               <Plus />
-              Tạo link mời
+              Tạo đường dẫn mời
             </SubmitButton>
           </form>
         </CardContent>
@@ -215,14 +310,15 @@ export function InviteManager({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Link đã tạo</CardTitle>
+          <CardTitle className="text-lg">Đường dẫn đã tạo</CardTitle>
           <CardDescription>
-            Không thể xem lại token đầy đủ sau khi rời trang.
+            Đường dẫn đã tạo trên thiết bị này có thể sao chép lại. Trên thiết bị
+            khác, hãy tạo đường dẫn mới nếu cần.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {invites.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Chưa có link mời.</p>
+            <p className="text-sm text-muted-foreground">Chưa có đường dẫn mời.</p>
           ) : (
             invites.map((invite) => {
               const revoked = Boolean(invite.revoked_at);
@@ -230,6 +326,7 @@ export function InviteManager({
                 invite.max_uses !== null && invite.uses_count >= invite.max_uses;
               const expired =
                 invite.expires_at && new Date(invite.expires_at) < new Date();
+              const savedUrl = savedLinks[invite.id];
 
               return (
                 <div
@@ -238,7 +335,7 @@ export function InviteManager({
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">
-                      {invite.label || "Link mời"}
+                      {invite.label || "Đường dẫn mời"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {invite.uses_count}
@@ -260,31 +357,52 @@ export function InviteManager({
                     </div>
                   </div>
 
-                  {!revoked ? (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      disabled={revoking === invite.id}
-                      onClick={() => {
-                        setRevoking(invite.id);
-                        revokeInviteAction(groupId, invite.id).then((result) => {
-                          if (result.error) toast.error(result.error);
-                          else {
-                            toast.success("Đã thu hồi link");
-                            router.refresh();
-                          }
-                          setRevoking(null);
-                        });
-                      }}
-                      aria-label="Thu hồi link"
-                    >
-                      {revoking === invite.id ? (
-                        <Loader2 className="animate-spin" />
-                      ) : (
-                        <Trash2 />
-                      )}
-                    </Button>
-                  ) : null}
+                  <div className="flex shrink-0 items-center gap-1">
+                    {!revoked && savedUrl ? (
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        onClick={() => copy(savedUrl)}
+                        aria-label="Sao chép đường dẫn mời"
+                        title="Sao chép đường dẫn mời"
+                      >
+                        <Copy />
+                        Sao chép
+                      </Button>
+                    ) : null}
+                    {!revoked ? (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        disabled={revoking === invite.id}
+                        onClick={() => {
+                          setRevoking(invite.id);
+                          revokeInviteAction(groupId, invite.id).then((result) => {
+                            if (result.error) toast.error(result.error);
+                            else {
+                              const current = readSavedLinks(storageKey);
+                              if (current[invite.id]) {
+                                const next = { ...current };
+                                delete next[invite.id];
+                                writeSavedLinks(storageKey, next);
+                              }
+                              toast.success("Đã thu hồi đường dẫn");
+                              router.refresh();
+                            }
+                            setRevoking(null);
+                          });
+                        }}
+                        aria-label="Thu hồi đường dẫn"
+                        title="Thu hồi đường dẫn"
+                      >
+                        {revoking === invite.id ? (
+                          <Loader2 className="animate-spin" />
+                        ) : (
+                          <Trash2 />
+                        )}
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               );
             })

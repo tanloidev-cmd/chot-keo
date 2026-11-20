@@ -83,24 +83,24 @@ export function MemberActions({
                   onClick={() =>
                     run(
                       () => setMemberRoleAction(groupId, userId, "admin"),
-                      "Đã thăng Admin",
+                      "Đã nâng lên Trợ thủ",
                     )
                   }
                 >
                   <Shield />
-                  Thăng làm Admin
+                  Nâng lên Trợ thủ
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem
                   onClick={() =>
                     run(
                       () => setMemberRoleAction(groupId, userId, "member"),
-                      "Đã hạ xuống Member",
+                      "Đã chuyển về Thành viên",
                     )
                   }
                 >
                   <UserRound />
-                  Hạ xuống Member
+                  Chuyển về Thành viên
                 </DropdownMenuItem>
               )}
 
@@ -108,7 +108,7 @@ export function MemberActions({
               <DropdownMenuItem asChild>
                 <AlertDialogTrigger className="w-full">
                   <Crown />
-                  Chuyển quyền Owner
+                  Chuyển quyền Chủ nhóm
                 </AlertDialogTrigger>
               </DropdownMenuItem>
             </>
@@ -132,9 +132,9 @@ export function MemberActions({
 
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Chuyển quyền Owner?</AlertDialogTitle>
+          <AlertDialogTitle>Chuyển quyền Chủ nhóm?</AlertDialogTitle>
           <AlertDialogDescription>
-            Thành viên này sẽ toàn quyền quản lý nhóm. Bạn sẽ trở thành Admin.
+            Thành viên này sẽ toàn quyền quản lý nhóm. Bạn sẽ trở thành Trợ thủ.
             Hành động này không thể hoàn tác nếu không được chuyển lại.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -144,7 +144,7 @@ export function MemberActions({
             onClick={() =>
               run(
                 () => transferOwnershipAction(groupId, userId),
-                "Đã chuyển quyền Owner",
+                "Đã chuyển quyền Chủ nhóm",
               )
             }
           >

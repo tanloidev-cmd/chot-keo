@@ -474,7 +474,7 @@ begin
     v_meetup.group_id,
     'meetup_confirmed',
     'Đã chốt: ' || v_meetup.title,
-    'Kèo đã được xác nhận. Vào xem thời gian, địa điểm và RSVP.',
+    'Kèo đã được xác nhận. Vào xem thời gian, địa điểm và xác nhận tham gia.',
     '/meetups/' || p_meetup_id::text,
     p_meetup_id,
     v_actor
@@ -590,11 +590,11 @@ begin
   end if;
 
   if v_meetup.status not in ('confirmed', 'in_progress', 'completed') then
-    raise exception 'RSVP opens after the meetup is confirmed' using errcode = '22023';
+    raise exception 'Xác nhận tham gia chỉ mở sau khi kèo được chốt' using errcode = '22023';
   end if;
 
   if p_status not in ('going', 'maybe', 'not_going') then
-    raise exception 'Invalid RSVP status' using errcode = '22023';
+    raise exception 'Trạng thái xác nhận không hợp lệ' using errcode = '22023';
   end if;
 
   select status into v_previous
@@ -624,7 +624,7 @@ begin
       p_meetup_id,
       'cancellation_requested',
       'Có người hủy tham gia',
-      'Một thành viên vừa hủy tham gia kèo. Vào xem để cập nhật logistics.',
+      'Một thành viên vừa hủy tham gia kèo. Vào xem để sắp xếp lại kèo.',
       '/meetups/' || p_meetup_id::text
     );
   elsif v_effective in ('going', 'maybe') then

@@ -92,14 +92,14 @@ export default async function HomePage() {
         <EmptyState
           icon={<UsersRound />}
           title="Bạn chưa có nhóm nào"
-          description="Tạo nhóm đầu tiên hoặc tham gia bằng link mời để bắt đầu."
+          description="Tạo nhóm đầu tiên hoặc tham gia bằng đường dẫn mời để bắt đầu."
           action={
             <div className="flex gap-2">
               <Button asChild>
                 <Link href="/onboarding">Tạo nhóm</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/groups">Nhập link mời</Link>
+                <Link href="/groups">Nhập đường dẫn mời</Link>
               </Button>
             </div>
           }
@@ -126,12 +126,17 @@ export default async function HomePage() {
           <CardContent className="space-y-4">
             <div className="space-y-1.5 text-sm">
               {venue ? (
-                <p className="flex items-center gap-2">
-                  <MapPin className="size-4 text-muted-foreground" />
-                  {venue.name}
-                  {venue.address ? (
-                    <span className="text-muted-foreground">— {venue.address}</span>
-                  ) : null}
+                <p className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
+                  <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 break-words">
+                    {venue.name}
+                    {venue.address ? (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        — {venue.address}
+                      </span>
+                    ) : null}
+                  </span>
                 </p>
               ) : null}
               <p className="flex items-center gap-2">
@@ -165,7 +170,7 @@ export default async function HomePage() {
               <RsvpBadge status={(rsvpMap.get(nextMeetup.id) as any) ?? null} />
               <Button asChild>
                 <Link href={`/meetups/${nextMeetup.id}`}>
-                  Xem & RSVP
+                  Xem & xác nhận
                   <ArrowRight />
                 </Link>
               </Button>

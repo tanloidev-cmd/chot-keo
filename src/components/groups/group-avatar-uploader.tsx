@@ -27,7 +27,7 @@ export function GroupAvatarUploader({
 
   function upload(file: File) {
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Ảnh tối đa 2MB");
+      toast.error("Ảnh tối đa 2 MB");
       return;
     }
     if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {

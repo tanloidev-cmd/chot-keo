@@ -28,16 +28,23 @@ export function ShareLinkButton({
 
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Đã copy link");
+      toast.success("Đã sao chép đường dẫn");
     } catch {
-      toast.error("Không copy được link");
+      toast.error("Không sao chép được đường dẫn");
     }
   }
 
   return (
-    <Button type="button" variant="outline" size="sm" onClick={share}>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={share}
+      aria-label={label}
+      title={label}
+    >
       <Share2 />
-      {label}
+      <span className="hidden sm:inline">{label}</span>
     </Button>
   );
 }

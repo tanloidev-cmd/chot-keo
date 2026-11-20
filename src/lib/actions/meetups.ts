@@ -288,11 +288,11 @@ export async function setRsvpAction(
     p_reason: reason || null,
   });
 
-  if (error) return { error: "Không thể cập nhật RSVP." };
+  if (error) return { error: "Không thể cập nhật xác nhận tham gia." };
 
   revalidatePath(`/meetups/${meetupId}`);
   revalidatePath("/home");
-  return { success: "Đã cập nhật phản hồi." };
+  return { success: "Đã cập nhật xác nhận tham gia." };
 }
 
 export async function assignHostAction(
@@ -306,10 +306,10 @@ export async function assignHostAction(
     p_user_id: userId,
   });
 
-  if (error) return { error: "Không thể gán Host." };
+  if (error) return { error: "Không thể gán chủ xị." };
 
   revalidatePath(`/meetups/${meetupId}`);
-  return { success: "Đã gán Host." };
+  return { success: "Đã gán chủ xị." };
 }
 
 export async function unassignHostAction(
@@ -323,10 +323,10 @@ export async function unassignHostAction(
     p_user_id: userId,
   });
 
-  if (error) return { error: "Không thể bỏ Host." };
+  if (error) return { error: "Không thể bỏ chủ xị." };
 
   revalidatePath(`/meetups/${meetupId}`);
-  return { success: "Đã bỏ Host." };
+  return { success: "Đã bỏ chủ xị." };
 }
 
 export async function acknowledgeCancellationAction(

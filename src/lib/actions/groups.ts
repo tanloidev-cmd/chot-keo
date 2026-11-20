@@ -19,6 +19,7 @@ export type ActionState = {
 
 export type InviteState = ActionState & {
   url?: string;
+  inviteId?: string;
 };
 
 export async function createGroupAction(
@@ -126,8 +127,9 @@ export async function createInviteAction(
   const rawToken = randomBytes(32).toString("base64url");
   const tokenHash = createHash("sha256").update(rawToken).digest("hex");
 
+  const inviteId = crypto.randomUUID();
   const { error } = await supabase.from("group_invites").insert({
-    id: crypto.randomUUID(),
+    id: inviteId,
     group_id: groupId,
     created_by: user.id,
     token_hash: tokenHash,
@@ -139,13 +141,14 @@ export async function createInviteAction(
   });
 
   if (error) {
-    return { error: "Không thể tạo link mời. Cần quyền Owner/Admin." };
+    return { error: "Không thể tạo đường dẫn mời. Cần quyền Chủ nhóm hoặc Trợ thủ." };
   }
 
   revalidatePath(`/groups/${groupId}/settings`);
   return {
-    success: "Đã tạo link mời. Link chỉ hiển thị đầy đủ một lần.",
+    success: "Đã tạo đường dẫn mời.",
     url: `${publicEnv.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/join/${rawToken}`,
+    inviteId,
   };
 }
 
@@ -159,10 +162,10 @@ export async function revokeInviteAction(
     p_invite_id: inviteId,
   });
 
-  if (error) return { error: "Không thể thu hồi link mời." };
+  if (error) return { error: "Không thể thu hồi đường dẫn mời." };
 
   revalidatePath(`/groups/${groupId}/settings`);
-  return { success: "Đã thu hồi link mời." };
+  return { success: "Đã thu hồi đường dẫn mời." };
 }
 
 export async function redeemInviteAction(rawToken: string): Promise<ActionState> {
@@ -176,7 +179,7 @@ export async function redeemInviteAction(rawToken: string): Promise<ActionState>
   if (error || !groupId) {
     return {
       error:
-        "Link mời không hợp lệ, đã hết hạn, đã bị thu hồi hoặc đã hết lượt.",
+        "Đường dẫn mời không hợp lệ, đã hết hạn, đã bị thu hồi hoặc đã hết lượt.",
     };
   }
 
@@ -232,11 +235,11 @@ export async function transferOwnershipAction(
     p_new_owner_id: userId,
   });
 
-  if (error) return { error: "Không thể chuyển quyền Owner." };
+  if (error) return { error: "Không thể chuyển quyền Chủ nhóm." };
 
   revalidatePath(`/groups/${groupId}`);
   revalidatePath(`/groups/${groupId}/members`);
-  return { success: "Đã chuyển quyền Owner." };
+  return { success: "Đã chuyển quyền Chủ nhóm." };
 }
 
 export async function leaveGroupAction(groupId: string): Promise<ActionState> {
@@ -246,7 +249,7 @@ export async function leaveGroupAction(groupId: string): Promise<ActionState> {
     p_group_id: groupId,
   });
 
-  if (error) return { error: "Không thể rời nhóm. Owner cần chuyển quyền trước." };
+  if (error) return { error: "Không thể rời nhóm. Chủ nhóm cần chuyển quyền trước." };
 
   revalidatePath("/groups");
   revalidatePath("/home");

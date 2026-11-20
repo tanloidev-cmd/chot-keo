@@ -181,7 +181,7 @@ export function VotePanel({
                       }).format(new Date(option.ends_at))}
                     </p>
                   </div>
-                  <Badge variant="secondary">{option.vote_count} vote</Badge>
+                  <Badge variant="secondary">{option.vote_count} phiếu</Badge>
                 </div>
                 <div className="ml-7 flex flex-wrap gap-1.5 text-[11px]">
                   <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
@@ -236,7 +236,7 @@ export function VotePanel({
                         <p className="text-xs text-muted-foreground">{option.note}</p>
                       ) : null}
                     </div>
-                    <Badge variant="secondary">{option.vote_count} vote</Badge>
+                    <Badge variant="secondary">{option.vote_count} phiếu</Badge>
                   </Label>
                 ))}
               </RadioGroup>
@@ -318,7 +318,8 @@ export function ConfirmMeetupDialog({
         <DialogHeader>
           <DialogTitle>Chốt phương án cuối cùng</DialogTitle>
           <DialogDescription>
-            Hành động này sẽ xác nhận kèo và mở RSVP cho cả nhóm.
+            Hành động này sẽ xác nhận kèo và mở phần xác nhận tham gia cho cả
+            nhóm.
           </DialogDescription>
         </DialogHeader>
 
@@ -392,7 +393,7 @@ export function RsvpPanel({
       );
       if (result.error) toast.error(result.error);
       else {
-        toast.success("Đã cập nhật phản hồi");
+        toast.success("Đã cập nhật xác nhận tham gia");
         setCancelOpen(false);
       }
     });
@@ -401,9 +402,9 @@ export function RsvpPanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Phản hồi tham gia</CardTitle>
+        <CardTitle className="text-lg">Xác nhận tham gia</CardTitle>
         <CardDescription>
-          Cập nhật để cả nhóm biết bạn có đi hay không.
+          Cho cả nhóm biết bạn có đi hay không.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -425,7 +426,7 @@ export function RsvpPanel({
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Phản hồi của bạn</span>
+          <span className="text-sm text-muted-foreground">Xác nhận của bạn</span>
           <RsvpBadge status={myStatus as any} />
         </div>
 
@@ -459,7 +460,7 @@ export function RsvpPanel({
 
         <div>
           <p className="mb-2 text-sm font-medium">
-            Danh sách phản hồi ({attendees.length})
+            Danh sách xác nhận ({attendees.length})
           </p>
           <div className="space-y-1.5">
             {attendees.map((attendee) => (
@@ -467,7 +468,7 @@ export function RsvpPanel({
                 key={attendee.user_id}
                 className="flex items-center justify-between gap-2 text-sm"
               >
-                <span className="truncate">
+                <span className="min-w-0 truncate">
                   {attendee.profile?.display_name ?? "Thành viên"}
                 </span>
                 <RsvpBadge status={attendee.status as any} />
@@ -475,7 +476,7 @@ export function RsvpPanel({
             ))}
             {attendees.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Chưa có ai phản hồi.
+                Chưa có ai xác nhận.
               </p>
             ) : null}
           </div>
@@ -487,8 +488,8 @@ export function RsvpPanel({
           <DialogHeader>
             <DialogTitle>Hủy tham gia</DialogTitle>
             <DialogDescription>
-              Bạn vẫn có quyền không tham dự. Lý do là riêng tư, chỉ Host/Owner/Admin
-              thấy.
+              Bạn vẫn có quyền không tham dự. Lý do là riêng tư, chỉ Chủ nhóm,
+              Trợ thủ của nhóm hoặc Chủ xị của kèo thấy.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -508,7 +509,7 @@ export function RsvpPanel({
               className="flex-1"
               onClick={() => setCancelOpen(false)}
             >
-              Giữ phản hồi
+              Giữ nguyên
             </Button>
             <Button
               variant="destructive"
@@ -547,7 +548,7 @@ export function HostManager({
       const result = await assignHostAction(meetupId, userId);
       if (result.error) toast.error(result.error);
       else {
-        toast.success("Đã gán Host");
+        toast.success("Đã gán chủ xị");
         setOpen(false);
       }
     });
@@ -570,9 +571,9 @@ export function HostManager({
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Gán Host</DialogTitle>
+                <DialogTitle>Gán chủ xị</DialogTitle>
                 <DialogDescription>
-                  Host có thể theo dõi RSVP và xử lý yêu cầu hủy.
+                  Chủ xị có thể theo dõi xác nhận tham gia và xử lý yêu cầu hủy.
                 </DialogDescription>
               </DialogHeader>
               <Select value={userId} onValueChange={setUserId}>
@@ -589,7 +590,7 @@ export function HostManager({
               </Select>
               <Button onClick={assign} disabled={pending || !userId}>
                 {pending ? <Loader2 className="animate-spin" /> : <Check />}
-                Gán Host
+                Gán chủ xị
               </Button>
             </DialogContent>
           </Dialog>
@@ -597,7 +598,7 @@ export function HostManager({
       </CardHeader>
       <CardContent>
         {hosts.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Chưa gán Host.</p>
+          <p className="text-sm text-muted-foreground">Chưa gán chủ xị.</p>
         ) : (
           <div className="space-y-2">
             {hosts.map((host) => (
@@ -605,7 +606,9 @@ export function HostManager({
                 key={host.user_id}
                 className="flex items-center justify-between gap-2 text-sm"
               >
-                <span>{host.profile?.display_name ?? "Thành viên"}</span>
+                <span className="min-w-0 truncate">
+                  {host.profile?.display_name ?? "Thành viên"}
+                </span>
                 {canManage ? (
                   <Button
                     variant="ghost"
@@ -617,10 +620,10 @@ export function HostManager({
                           host.user_id,
                         );
                         if (result.error) toast.error(result.error);
-                        else toast.success("Đã bỏ Host");
+                        else toast.success("Đã bỏ chủ xị");
                       })
                     }
-                    aria-label="Bỏ Host"
+                    aria-label="Bỏ chủ xị"
                   >
                     <UserMinus />
                   </Button>
@@ -658,14 +661,15 @@ export function CancellationRequests({
         </CardTitle>
         <CardDescription>
           {meetupTitle ? `${meetupTitle} • ` : ""}
-          Lý do riêng tư chỉ hiển thị cho Host/Owner/Admin.
+          Lý do riêng tư chỉ hiển thị cho Chủ nhóm, Trợ thủ của nhóm hoặc Chủ
+          xị của kèo.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {requests.map((request) => (
           <div key={request.id} className="rounded-xl border p-3">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">
+              <p className="min-w-0 truncate text-sm font-medium">
                 {request.profile?.display_name ?? "Thành viên"}
               </p>
               <Badge

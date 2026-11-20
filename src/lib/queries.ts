@@ -94,7 +94,7 @@ export async function getGroup(groupId: string) {
     supabase
       .from("group_members")
       .select(
-        "group_id, user_id, role, status, joined_at, profiles!group_members_user_id_fkey(id, display_name, avatar_url)",
+        "group_id, user_id, role, status, joined_at, profile:profiles!group_members_user_id_fkey(id, display_name, avatar_url)",
       )
       .eq("group_id", groupId)
       .eq("status", "active")
@@ -127,7 +127,7 @@ export async function getGroupMembers(groupId: string) {
   const { data } = await supabase
     .from("group_members")
     .select(
-      "group_id, user_id, role, status, joined_at, profiles!group_members_user_id_fkey(id, display_name, avatar_url)",
+      "group_id, user_id, role, status, joined_at, profile:profiles!group_members_user_id_fkey(id, display_name, avatar_url)",
     )
     .eq("group_id", groupId)
     .eq("status", "active")
@@ -156,7 +156,7 @@ export async function getGroupAvailability(
   const { data } = await supabase
     .from("availability_entries")
     .select(
-      "*, profiles!availability_entries_user_id_fkey(display_name, avatar_url)",
+      "*, profile:profiles!availability_entries_user_id_fkey(display_name, avatar_url)",
     )
     .eq("group_id", groupId)
     .gte("local_date", from)
@@ -238,19 +238,19 @@ export async function getMeetupBundle(meetupId: string) {
     supabase
       .from("meetup_attendees")
       .select(
-        "*, profiles!meetup_attendees_user_id_fkey(id, display_name, avatar_url)",
+        "*, profile:profiles!meetup_attendees_user_id_fkey(id, display_name, avatar_url)",
       )
       .eq("meetup_id", meetupId),
     supabase
       .from("host_assignments")
       .select(
-        "*, profiles!host_assignments_user_id_fkey(id, display_name, avatar_url)",
+        "*, profile:profiles!host_assignments_user_id_fkey(id, display_name, avatar_url)",
       )
       .eq("meetup_id", meetupId),
     supabase
       .from("cancellation_requests")
       .select(
-        "*, profiles!cancellation_requests_user_id_fkey(id, display_name, avatar_url)",
+        "*, profile:profiles!cancellation_requests_user_id_fkey(id, display_name, avatar_url)",
       )
       .eq("meetup_id", meetupId)
       .order("created_at", { ascending: false }),

@@ -151,7 +151,7 @@ export default async function MeetupDetailPage(
 
       {meetup.description ? (
         <Card>
-          <CardContent className="p-4 text-sm whitespace-pre-line">
+          <CardContent className="p-4 text-sm break-words whitespace-pre-line">
             {meetup.description}
           </CardContent>
         </Card>
@@ -176,10 +176,12 @@ export default async function MeetupDetailPage(
               <p className="text-muted-foreground">{confirmedTime.label}</p>
             ) : null}
             {confirmedVenue ? (
-              <p className="flex items-center gap-2">
-                <MapPin className="size-4 text-muted-foreground" />
-                {confirmedVenue.name}
-                {confirmedVenue.address ? ` — ${confirmedVenue.address}` : ""}
+              <p className="flex flex-wrap items-start gap-x-2 gap-y-0.5">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 break-words">
+                  {confirmedVenue.name}
+                  {confirmedVenue.address ? ` — ${confirmedVenue.address}` : ""}
+                </span>
               </p>
             ) : (
               <p className="text-muted-foreground">Chưa chốt địa điểm.</p>
@@ -219,7 +221,7 @@ export default async function MeetupDetailPage(
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Chốt kèo</CardTitle>
             <CardDescription>
-              Chọn một phương án và xác nhận để mở RSVP.
+              Chọn một phương án và xác nhận để mở phần xác nhận tham gia.
             </CardDescription>
           </CardHeader>
           <CardContent>

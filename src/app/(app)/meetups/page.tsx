@@ -10,7 +10,7 @@ import { getMeetupAttendeeCounts, getMyGroups } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import type { Meetup } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Meetup" };
+export const metadata: Metadata = { title: "Kèo" };
 
 export default async function MeetupsPage() {
   const groups = await getMyGroups();
@@ -18,7 +18,7 @@ export default async function MeetupsPage() {
   if (groups.length === 0) {
     return (
       <div>
-        <PageHeader title="Meetup" />
+        <PageHeader title="Kèo" />
         <EmptyState
           icon={<PartyPopper />}
           title="Chưa có nhóm nào"
@@ -63,7 +63,7 @@ export default async function MeetupsPage() {
   return (
     <div>
       <PageHeader
-        title="Meetup"
+        title="Kèo"
         description="Kèo đang bình chọn, đã chốt và lịch sử."
         action={
           <Button asChild size="sm">

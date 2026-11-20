@@ -61,10 +61,10 @@ export default async function JoinPage(props: PageProps<"/join/[token]">) {
                 <div className="mb-2 flex size-11 items-center justify-center rounded-2xl bg-rose-100 text-rose-700">
                   <AlertTriangle />
                 </div>
-                <CardTitle>Link mời không hợp lệ</CardTitle>
+                <CardTitle>Đường dẫn mời không hợp lệ</CardTitle>
                 <CardDescription>
-                  Link đã hết hạn, bị thu hồi hoặc đã hết lượt. Hãy xin link mới
-                  từ Owner/Admin của nhóm.
+                  Đường dẫn đã hết hạn, bị thu hồi hoặc đã hết lượt. Hãy xin
+                  đường dẫn mới từ Chủ nhóm hoặc Trợ thủ của nhóm.
                 </CardDescription>
               </CardHeader>
               <CardContent>

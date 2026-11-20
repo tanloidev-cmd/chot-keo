@@ -11,7 +11,7 @@ import {
   Vote,
 } from "lucide-react";
 
-import { MeetupStatusBadge } from "@/components/status-badge";
+import { MeetupStatusBadge, RoleBadge } from "@/components/status-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -117,7 +117,7 @@ export default async function GroupOverviewPage(
             </div>
             <Button asChild className="w-full">
               <Link href={`/meetups/${nextMeetup.id}`}>
-                Xem chi tiết & RSVP
+                Xem chi tiết & xác nhận
                 <ArrowRight />
               </Link>
             </Button>
@@ -216,7 +216,7 @@ export default async function GroupOverviewPage(
                   <p className="truncate text-sm font-medium">
                     {member.profile?.display_name ?? "Thành viên"}
                   </p>
-                  <p className="text-xs text-muted-foreground">{member.role}</p>
+                  <RoleBadge role={member.role} />
                 </div>
               </div>
             ))}

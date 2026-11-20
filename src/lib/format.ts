@@ -24,5 +24,5 @@ export function rsvpLabel(value: string | null | undefined) {
     cancelled: "Đã hủy",
     waitlisted: "Danh sách chờ",
   };
-  return value ? (map[value] ?? value) : "Chưa phản hồi";
+  return value ? (map[value] ?? value) : "Chưa xác nhận";
 }

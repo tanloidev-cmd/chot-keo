@@ -8,12 +8,12 @@ import type {
 
 export function RoleBadge({ role }: { role: GroupRole }) {
   if (role === "owner") {
-    return <Badge className="bg-amber-100 text-amber-800">Owner</Badge>;
+    return <Badge className="bg-amber-100 text-amber-800">Chủ nhóm</Badge>;
   }
   if (role === "admin") {
-    return <Badge className="bg-sky-100 text-sky-800">Admin</Badge>;
+    return <Badge className="bg-sky-100 text-sky-800">Trợ thủ</Badge>;
   }
-  return <Badge variant="secondary">Member</Badge>;
+  return <Badge variant="secondary">Thành viên</Badge>;
 }
 
 export function MeetupStatusBadge({ status }: { status: MeetupStatus }) {
@@ -46,7 +46,7 @@ export function AvailabilityBadge({ status }: { status: AvailabilityStatus }) {
 
 export function RsvpBadge({ status }: { status: RsvpStatus | null }) {
   if (!status) {
-    return <Badge variant="outline">Chưa phản hồi</Badge>;
+    return <Badge variant="outline">Chưa xác nhận</Badge>;
   }
 
   const map: Record<RsvpStatus, { label: string; className: string }> = {

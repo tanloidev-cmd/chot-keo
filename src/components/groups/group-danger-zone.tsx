@@ -43,7 +43,7 @@ export function GroupDangerZone({
             <Button asChild variant="outline" className="w-full justify-start">
               <Link href={`/groups/${groupId}/members`}>
                 <UserCog />
-                Chuyển quyền Owner trước khi rời nhóm
+                Chuyển quyền Chủ nhóm trước khi rời nhóm
               </Link>
             </Button>
 
@@ -58,7 +58,7 @@ export function GroupDangerZone({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Xóa nhóm này?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Toàn bộ kèo, lịch rảnh, thành viên và link mời sẽ bị xóa.
+                    Toàn bộ kèo, lịch rảnh, thành viên và đường dẫn mời sẽ bị xóa.
                     Không thể hoàn tác.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -92,7 +92,7 @@ export function GroupDangerZone({
                 <AlertDialogTitle>Rời nhóm này?</AlertDialogTitle>
                 <AlertDialogDescription>
                   Bạn sẽ không còn thấy lịch, kèo và thành viên của nhóm. Có thể
-                  tham gia lại nếu có link mời hợp lệ.
+                  tham gia lại nếu có đường dẫn mời hợp lệ.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

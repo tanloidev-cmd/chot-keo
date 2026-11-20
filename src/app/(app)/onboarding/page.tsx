@@ -24,7 +24,7 @@ export default async function OnboardingPage() {
     <div className="mx-auto max-w-xl">
       <PageHeader
         title="Bắt đầu với một nhóm"
-        description="Tạo nhóm mới hoặc mở link mời bạn nhận được."
+        description="Tạo nhóm mới hoặc mở đường dẫn mời bạn nhận được."
       />
 
       <div className="space-y-4">
@@ -35,7 +35,7 @@ export default async function OnboardingPage() {
             </div>
             <CardTitle>Tạo nhóm đầu tiên</CardTitle>
             <CardDescription>
-              Bạn sẽ là Owner. Mời bạn bè bằng link sau khi tạo.
+              Bạn sẽ là Chủ nhóm. Mời bạn bè bằng đường dẫn sau khi tạo.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -48,9 +48,9 @@ export default async function OnboardingPage() {
             <div className="mb-1 flex size-10 items-center justify-center rounded-xl bg-sky-100 text-sky-700">
               <Link2 />
             </div>
-            <CardTitle>Tham gia bằng link mời</CardTitle>
+            <CardTitle>Tham gia bằng đường dẫn mời</CardTitle>
             <CardDescription>
-              Dán link mời hoặc mã mời để vào nhóm có sẵn.
+              Dán đường dẫn mời hoặc mã mời để vào nhóm có sẵn.
             </CardDescription>
           </CardHeader>
           <CardContent>

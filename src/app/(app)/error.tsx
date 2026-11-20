@@ -21,7 +21,7 @@ export default function AppError({
         <div>
           <p className="font-semibold">Không tải được dữ liệu</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {error.message || "Có lỗi khi kết nối Supabase."}
+            Có lỗi khi tải dữ liệu. Thử lại nhé.
           </p>
           {error.digest ? (
             <p className="mt-1 text-xs text-muted-foreground">

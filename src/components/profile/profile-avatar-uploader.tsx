@@ -27,7 +27,7 @@ export function ProfileAvatarUploader({
 
   function upload(file: File) {
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Ảnh tối đa 2MB");
+      toast.error("Ảnh tối đa 2 MB");
       return;
     }
     if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
@@ -84,7 +84,9 @@ export function ProfileAvatarUploader({
             event.target.value = "";
           }}
         />
-        <p className="mt-1 text-xs text-muted-foreground">PNG/JPG/WebP, tối đa 2MB.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Ảnh PNG, JPG hoặc WebP, tối đa 2 MB.
+        </p>
       </div>
     </div>
   );

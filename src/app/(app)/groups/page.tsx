@@ -30,7 +30,7 @@ export default async function GroupsPage() {
         <EmptyState
           icon={<UsersRound />}
           title="Chưa có nhóm nào"
-          description="Tạo nhóm đầu tiên hoặc tham gia bằng link mời."
+          description="Tạo nhóm đầu tiên hoặc tham gia bằng đường dẫn mời."
           action={<GroupsToolbar />}
         />
       ) : (
@@ -51,14 +51,16 @@ export default async function GroupsPage() {
                       <RoleBadge role={group.my_role} />
                     </div>
                     <p className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
+                      <span className="inline-flex shrink-0 items-center gap-1">
                         <UsersRound className="size-3.5" />
                         {group.member_count} thành viên
                       </span>
                       {group.next_meetup ? (
-                        <span className="inline-flex items-center gap-1 truncate">
-                          <CalendarDays className="size-3.5" />
-                          {group.next_meetup.title}
+                        <span className="inline-flex min-w-0 items-center gap-1">
+                          <CalendarDays className="size-3.5 shrink-0" />
+                          <span className="truncate">
+                            {group.next_meetup.title}
+                          </span>
                         </span>
                       ) : null}
                     </p>

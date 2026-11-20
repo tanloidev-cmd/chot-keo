@@ -63,8 +63,8 @@ export default async function ProfilePage() {
             Bảo mật tài khoản
           </CardTitle>
           <CardDescription>
-            Không dùng email/SMS. Mọi thứ hoạt động bằng SĐT, mật khẩu và mã khôi
-            phục.
+            Không dùng email hay tin nhắn. Mọi thứ hoạt động bằng số điện thoại,
+            mật khẩu và mã khôi phục.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -83,7 +83,7 @@ export default async function ProfilePage() {
             Thông báo
           </CardTitle>
           <CardDescription>
-            Thông báo trong ứng dụng luôn được bật. Không gửi email/SMS.
+            Thông báo trong ứng dụng luôn được bật. Không gửi email hay tin nhắn.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
@@ -99,7 +99,8 @@ export default async function ProfilePage() {
             Cài như ứng dụng
           </CardTitle>
           <CardDescription>
-            Trên Chrome/Safari, chọn “Thêm vào màn hình chính” để dùng như app.
+            Trên Chrome/Safari, chọn “Thêm vào màn hình chính” để dùng như ứng
+            dụng.
           </CardDescription>
         </CardHeader>
       </Card>

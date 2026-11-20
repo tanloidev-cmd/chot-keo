@@ -62,7 +62,7 @@ export function UserMenu({
         <DropdownMenuItem asChild>
           <Link href="/host">
             <CalendarClock />
-            Host dashboard
+            Kèo tôi phụ trách
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s • Chốt Kèo",
   },
   description:
-    "Khai báo lịch rảnh, bình chọn ngày giờ, chốt kèo và RSVP cho nhóm bạn — nhanh trên điện thoại.",
+    "Khai báo lịch rảnh, bình chọn ngày giờ, chốt kèo và xác nhận tham gia cùng nhóm bạn — nhanh trên điện thoại.",
   applicationName: "Chốt Kèo",
   manifest: "/manifest.webmanifest",
   icons: {

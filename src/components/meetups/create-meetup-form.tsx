@@ -417,7 +417,7 @@ export function CreateMeetupForm({
             </span>
             Địa điểm gợi ý (tùy chọn)
           </CardTitle>
-          <CardDescription>Nhập tay ở MVP, chưa cần bản đồ.</CardDescription>
+          <CardDescription>Tự nhập địa điểm, chưa cần bản đồ.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {venueOptions.map((venue, index) => (

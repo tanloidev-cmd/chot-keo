@@ -32,7 +32,7 @@ export function GroupsToolbar() {
           <DialogHeader>
             <DialogTitle>Tạo nhóm mới</DialogTitle>
             <DialogDescription>
-              Bạn sẽ là Owner và có thể mời thành viên bằng link.
+              Bạn sẽ là Chủ nhóm và có thể mời thành viên bằng đường dẫn.
             </DialogDescription>
           </DialogHeader>
           <CreateGroupForm />
@@ -50,7 +50,7 @@ export function GroupsToolbar() {
           <DialogHeader>
             <DialogTitle>Tham gia nhóm</DialogTitle>
             <DialogDescription>
-              Dán link mời hoặc mã mời bạn nhận được.
+              Dán đường dẫn mời hoặc mã mời bạn nhận được.
             </DialogDescription>
           </DialogHeader>
           <JoinByLinkForm />

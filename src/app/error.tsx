@@ -24,8 +24,7 @@ export default function GlobalError({
       <div>
         <h1 className="text-xl font-semibold">Có lỗi xảy ra</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Thử tải lại trang. Nếu vẫn lỗi, kiểm tra cấu hình Supabase trong
-          RUNBOOK.md.
+          Thử tải lại trang. Nếu vẫn lỗi, báo lại cho người phụ trách ứng dụng.
         </p>
       </div>
       <Button onClick={reset}>
