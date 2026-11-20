@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, UsersRound } from "lucide-react";
 
@@ -40,9 +41,14 @@ export default async function JoinPage(props: PageProps<"/join/[token]">) {
     <div className="flex min-h-dvh flex-col bg-gradient-to-b from-orange-50 via-background to-background">
       <header className="mx-auto flex h-16 w-full max-w-md items-center px-5">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
-            CK
-          </span>
+          <Image
+            src="/icons/logo.png"
+            alt=""
+            width={40}
+            height={40}
+            className="size-10 shrink-0"
+            priority
+          />
           <span className="text-lg font-semibold">Chốt Kèo</span>
         </Link>
       </header>

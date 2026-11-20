@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { BottomNav, DesktopNav } from "@/components/main-nav";
@@ -23,9 +24,14 @@ export function AppShell({
       <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-3xl items-center gap-2 px-4">
           <Link href="/home" className="mr-2 flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
-              CK
-            </span>
+            <Image
+              src="/icons/logo.png"
+              alt=""
+              width={40}
+              height={40}
+              className="size-9 shrink-0"
+              priority
+            />
             <span className="text-lg font-semibold tracking-tight">Chốt Kèo</span>
           </Link>
           <div className="hidden flex-1 md:block">
